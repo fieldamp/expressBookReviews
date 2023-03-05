@@ -18,13 +18,11 @@ let users = [
     },
 ];
 
-const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+const isValid = (username)=>{ 
 return users.some((user) => user.username === username);
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
+const authenticatedUser = (username,password)=>{ 
 return users.some((user) => user.username === username && user.password === password);
 }
 
@@ -50,11 +48,9 @@ regd_users.post("/login", (req,res) => {
             accessToken,
             username,
         };
-        return res.status(200).send("User successfully logged in");
+        return res.status(200).json({ message:"User successfully logged in" });
     } else {
-        return res
-            .status(208)
-            .json({ message: "Invalid Login. Check username and password" });
+        return res.status(200).json({ message:"Invalid Login. Check username and password" });
     }
 });
 
@@ -62,21 +58,28 @@ regd_users.post("/login", (req,res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
 
     const isbn = req.params.isbn;
-    let filtered_book = books[isbn]
-    if (filtered_book) {
-        let review = req.query.review;
-        let reviewer = req.session.authorization['username'];
-        if(review) {
-            filtered_book['reviews'][reviewer] = review;
-            books[isbn] = filtered_book;
-        }
-        res.send(`The review for the book with ISBN  ${isbn} has been added/updated.`);
+    let book = books[isbn];
+    let review = req.query.review;
+    const username = req.session.authorization.username	
+    if (book) { 
+        book.reviews[username] = review;
+        books[isbn] = book;
+        return res.status(200).json({message: "The review for the book with ISBN "+isbn+ " has been added/ updated."});
     }
-    else{
-        res.send("Unable to find this ISBN!");
-    }
+    return res.status(404).json({ message: "Invalid ISBN" });
 });
+regd_users.delete("/auth/review/:isbn", (req, res) => {
 
+     const isbn = req.params.isbn
+     const username = req.session.authorization.username
+     if (books[isbn]) {
+         let book = books[isbn]
+         delete book.reviews[username]
+         return res.status(200).send({message: "Review successfully deleted"})
+     } else {
+         return res.status(404).json({message: "ISBN not found"})
+     }
+ });
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
