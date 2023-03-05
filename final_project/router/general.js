@@ -89,7 +89,7 @@ function getAllBooks() {
     });
   }
   
-  // Search by ISBN – Using Promises
+  // Search by ISBN – Using async callback function
   function getBookByISBN(isbn) {
     return new Promise((resolve) => {
       setTimeout(() => {
