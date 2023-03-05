@@ -34,25 +34,24 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/', async (req, res) => {
-  await res.send(JSON.stringify(books,null,4));
+    allbooks = await getAllBooks();
+    res.send(JSON.stringify(allbooks,null,4));
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', async (req, res) => {
-
-  const isbn = req.params.isbn
-  await res.send(JSON.stringify(books[isbn]));
+    isbn = req.params.isbn
+    booksisbn = await getBookByISBN(isbn);
+    if(!booksisbn){
+        res.send("Book not found");
+    }
+    res.send(JSON.stringify(booksisbn));
  });
   
 // Get book details based on author
 public_users.get('/author/:author',async (req, res) =>{
     const author = req.params.author;
-    const booksByAuthor = [];
-    for (const key in books) {
-      if (books[key].author === author) {
-        await booksByAuthor.push(books[key]);
-      }
-    }
+    booksByAuthor = await getBookByAuthor(author);
     if (booksByAuthor.length === 0) {
         return res.status(404).json({message: "Books not found"});
     }
@@ -63,16 +62,11 @@ public_users.get('/author/:author',async (req, res) =>{
 // Get all books based on title
 public_users.get('/title/:title',async (req, res) =>{
     const title = req.params.title;
-    const booksByTitle = [];
-    for (const key in books) {
-      if (books[key].title === title) {
-        await booksByTitle.push(books[key]);
-      }
-    }
+    booksByTitle = await getBookByTitle(title);
     if (booksByTitle.length === 0) {
         return res.status(404).json({message: "Books not found"});
     }
-return res.status(200).json({booksByTitle});
+    return res.status(200).json({booksByTitle});
 });
 
 //  Get book review
@@ -85,5 +79,53 @@ public_users.get('/review/:isbn',function (req, res) {
   }
   res.send(JSON.stringify(book.reviews));
 });
-
+// Get all books – Using async callback function
+function getAllBooks() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(books);
+      }, 2000);
+      return;
+    });
+  }
+  
+  // Search by ISBN – Using Promises
+  function getBookByISBN(isbn) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const book = books[isbn];
+        resolve(book);
+      }, 2000);
+    });
+  }
+  
+  // Search by author – Using async callback function
+  function getBookByAuthor(author) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const booksByAuthor = [];
+        for (const key in books) {
+          if (books[key].author === author) {
+            booksByAuthor.push(books[key]);
+          }
+        }
+        resolve(booksByAuthor);
+      }, 2000);
+    });
+  }
+  
+  // Search by title – Using async callback function
+  function getBookByTitle(title) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const booksByTitle = [];
+        for (const key in books) {
+          if (books[key].title === title) {
+            booksByTitle.push(books[key]);
+          }
+        }
+        resolve(booksByTitle);
+      }, 2000);
+    });
+  }
 module.exports.general = public_users;
